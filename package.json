@@ -2,13 +2,14 @@
   "name": "50cube-backend",
   "version": "1.0.0",
   "description": "50cube Tech Assessment Backend - MERN Stack API",
-  "main": "dist/server.js",
+  "main": "server.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node server.ts",
+    "vercel-build": "echo 'No build needed for serverless'",
     "test": "jest",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint **/*.ts",
     "clean": "rm -rf dist"
   },
   "keywords": [
