@@ -463,3 +463,5 @@ process.on("SIGINT", async () => {
 
 // Start the server
 startServer();
+
+export default app;
