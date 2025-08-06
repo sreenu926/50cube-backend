@@ -461,7 +461,53 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
-// Start the server
-startServer();
+// Database connection for serverless
+async function connectDB() {
+  if (mongoose.connection.readyState === 0) {
+    try {
+      console.log("🔄 Connecting to MongoDB...");
+      await mongoose.connect(
+        process.env.MONGODB_URI || "mongodb://localhost:27017/50cube"
+      );
+      console.log("✅ Connected to MongoDB successfully");
+    } catch (error: any) {
+      console.error("❌ Failed to connect to MongoDB:", error);
+      // Don't throw in serverless - just log the error
+    }
+  }
+}
 
+// Initialize database connection
+connectDB();
+
+// Initialize M14 snapshot job service (but don't start the cron job in serverless)
+try {
+  console.log("🔄 Initializing M14 snapshot job service...");
+  snapshotJobService.initializeDailyJob();
+  console.log("✅ M14 snapshot job service ready");
+} catch (error) {
+  console.log("⚠️ Snapshot job service initialization skipped in serverless");
+}
+
+// Add a simple root route
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "50cube API is running on Vercel!",
+    timestamp: new Date().toISOString(),
+    modules: {
+      M13: "Leagues - ✅ Complete",
+      M14: "Spotlight & Global Leaderboard - ✅ Complete",
+      M15: "Readers - ✅ Complete",
+    },
+    endpoints: [
+      "GET /api/health - Health check",
+      "GET /api/leagues - List leagues",
+      "GET /api/leaderboard - Global leaderboard",
+      "GET /api/readers/catalog - Browse readers",
+    ],
+  });
+});
+
+// Export the app for Vercel
 export default app;
