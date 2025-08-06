@@ -50,8 +50,8 @@ Backend API for 50cube learning platform with bite-sized interactive modules, sk
 
 ```bash
 # Clone repository
-git clone https://github.com/sreenu926/50cube-staging.git
-cd 50cube-staging
+git clone https://github.com/sreenu926/50cube-backend.git
+cd 50cube-backend
 
 # Install dependencies
 npm install

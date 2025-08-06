@@ -208,6 +208,7 @@ const corsOptions = {
     "http://localhost:4173",
     "http://127.0.0.1:5173",
     "https://50cube-staging.vercel.app",
+    "https://50cube-backend.vercel.app",
     /.*\.vercel\.app$/,
   ],
   credentials: true,
@@ -233,6 +234,7 @@ app.use((req, res, next) => {
     "http://localhost:4173",
     "http://127.0.0.1:5173",
     "https://50cube-staging.vercel.app",
+    "https://50cube-backend.vercel.app",
   ];
 
   if (
