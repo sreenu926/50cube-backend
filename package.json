@@ -10,7 +10,8 @@
     "vercel-build": "echo 'No build needed for serverless'",
     "test": "jest",
     "lint": "eslint **/*.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "snapshot": "node -e \"require('./services/snapshotJob').snapshotJobService.triggerManualSnapshot()\""
   },
   "keywords": [
     "50cube",

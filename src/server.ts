@@ -382,6 +382,149 @@ app.post("/api/leagues/submit", (req, res) => {
   }
 });
 
+app.post("/api/admin/snapshot/trigger", async (req, res) => {
+  try {
+    console.log("🔄 Manual snapshot trigger requested");
+    await snapshotJobService.triggerManualSnapshot();
+    res.json({
+      success: true,
+      message: "Snapshot creation triggered successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    console.error("❌ Error triggering snapshot:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to trigger snapshot",
+      error: error.message,
+    });
+  }
+});
+
+// Get snapshot statistics
+app.get("/api/admin/snapshot/stats", async (req, res) => {
+  try {
+    const stats = await snapshotJobService.getSnapshotStats();
+    res.json({
+      success: true,
+      data: stats || {
+        totalSnapshots: 0,
+        message: "No snapshots available (using mock data)",
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Error getting snapshot stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get snapshot stats",
+      error: error.message,
+    });
+  }
+});
+
+// ============== M15 SAMPLE PDF ROUTES ==============
+
+// Serve sample PDF content (mock file download)
+app.get("/api/readers/file/:token", (req, res) => {
+  const { token } = req.params;
+  console.log(`📥 Serving sample PDF file for token: ${token}`);
+
+  try {
+    // In production, you'd verify the JWT token here
+    // For demo, we'll just serve sample content
+
+    // Set PDF headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="sample-reader.pdf"'
+    );
+
+    // For demo purposes, return mock PDF info
+    // In production, you'd stream the actual PDF file
+    res.json({
+      success: true,
+      message: "PDF Download Ready",
+      filename: "sample-reader.pdf",
+      content: "This would be the actual PDF content in production",
+      size: "2.5MB",
+      pages: 45,
+      note: "In production, this would stream the actual PDF file. For demo purposes, this shows the download metadata.",
+      downloadInstructions: [
+        "This URL would serve the actual PDF file",
+        "The token expires in 24 hours",
+        "Each user has a limited number of downloads",
+      ],
+    });
+  } catch (error: any) {
+    console.error("❌ Error serving PDF file:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to serve PDF file",
+      error: error.message,
+    });
+  }
+});
+
+// Add sample PDF endpoints for different readers
+app.get("/api/readers/samples/:readerId", (req, res) => {
+  const { readerId } = req.params;
+  console.log(`📖 Serving sample preview for reader: ${readerId}`);
+
+  const sampleContent = {
+    reader1: {
+      title: "Advanced Calculus Mastery",
+      preview:
+        "Chapter 1: Introduction to Limits\n\nCalculus is the mathematical study of continuous change...",
+      tableOfContents: [
+        "Chapter 1: Limits and Continuity",
+        "Chapter 2: Derivatives",
+        "Chapter 3: Applications of Derivatives",
+        "Chapter 4: Integration",
+        "Chapter 5: Advanced Techniques",
+      ],
+    },
+    reader2: {
+      title: "Physics: Mechanics & Motion",
+      preview:
+        "Chapter 1: Newton's Laws of Motion\n\nThe foundation of classical mechanics rests upon three fundamental laws...",
+      tableOfContents: [
+        "Chapter 1: Newton's Laws",
+        "Chapter 2: Energy and Work",
+        "Chapter 3: Momentum",
+        "Chapter 4: Rotational Motion",
+        "Chapter 5: Gravitation",
+      ],
+    },
+    reader3: {
+      title: "English Grammar Essentials",
+      preview:
+        "Chapter 1: Parts of Speech\n\nUnderstanding the building blocks of language...",
+      tableOfContents: [
+        "Chapter 1: Parts of Speech",
+        "Chapter 2: Sentence Structure",
+        "Chapter 3: Punctuation Rules",
+        "Chapter 4: Common Mistakes",
+        "Chapter 5: Writing Style",
+      ],
+    },
+  };
+
+  const sample = sampleContent[readerId as keyof typeof sampleContent];
+
+  if (sample) {
+    res.json({
+      success: true,
+      data: sample,
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      message: "Sample not found",
+    });
+  }
+});
+
 // ============== MOCK LEADERBOARD ROUTES (M14) ==============
 
 app.get("/api/leaderboard/spotlight", (req, res) => {
@@ -591,16 +734,15 @@ async function connectDB() {
 connectDB();
 */
 
-// ✅ COMMENTED OUT - Snapshot service (depends on MongoDB)
-/*
 try {
   console.log("🔄 Initializing M14 snapshot job service...");
   snapshotJobService.initializeDailyJob();
   console.log("✅ M14 snapshot job service ready");
 } catch (error) {
-  console.log("⚠️ Snapshot job service initialization skipped in serverless");
+  console.log(
+    "⚠️ Snapshot job service initialization failed (MongoDB required for full functionality)"
+  );
 }
-*/
 
 console.log("🚀 50cube API starting with MOCK DATA for M13, M14, M15");
 
