@@ -378,7 +378,27 @@ app.use(
   }
 );
 
-// 404 handler
+// Add a simple root route - PUT THIS BEFORE THE 404 HANDLER
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "50cube API is running on Vercel!",
+    timestamp: new Date().toISOString(),
+    modules: {
+      M13: "Leagues - ✅ Complete",
+      M14: "Spotlight & Global Leaderboard - ✅ Complete",
+      M15: "Readers - ✅ Complete",
+    },
+    endpoints: [
+      "GET /api/health - Health check",
+      "GET /api/leagues - List leagues",
+      "GET /api/leaderboard - Global leaderboard",
+      "GET /api/readers/catalog - Browse readers",
+    ],
+  });
+});
+
+// 404 handler - KEEP THIS AT THE END
 app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
