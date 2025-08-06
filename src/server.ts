@@ -24,26 +24,97 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// CORS configuration
+// CORS configuration - FIXED!
 const corsOptions = {
   origin: [
     "http://localhost:5173", // Vite dev server
     "http://localhost:3000", // Alternative dev port
-    "https://your-frontend-domain.com", // Production domain
+    "http://localhost:4173", // Vite preview port
+    "http://127.0.0.1:5173", // Alternative localhost
+    "https://50cube-staging-71ecng6nl-nagasreenivasarao-ps-projects.vercel.app", // Your backend URL (for same-origin requests)
+    // Add your actual frontend URLs here when you deploy frontend
+    "https://your-frontend-50cube.vercel.app", // Replace with your actual frontend URL
+    "https://50cube.vercel.app", // Example frontend URL - replace with actual
+    // Temporary: Allow all Vercel preview URLs (remove in production)
+    /.*\.vercel\.app$/,
   ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers",
+  ],
+  optionsSuccessStatus: 200, // For legacy browser support
 };
 
-// Middleware
+// Enhanced CORS middleware with logging
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log(`🌐 CORS Request from origin: ${origin || "no-origin"}`);
+
+  // Set CORS headers manually for better control
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:4173",
+    "http://127.0.0.1:5173",
+    "https://50cube-staging-71ecng6nl-nagasreenivasarao-ps-projects.vercel.app",
+    "https://your-frontend-50cube.vercel.app",
+  ];
+
+  // Check if origin is allowed or is a Vercel preview URL
+  if (
+    origin &&
+    (allowedOrigins.includes(origin) || origin.endsWith(".vercel.app"))
+  ) {
+    res.header("Access-Control-Allow-Origin", origin);
+    console.log(`✅ CORS: Allowed origin ${origin}`);
+  } else if (!origin) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    res.header("Access-Control-Allow-Origin", "*");
+    console.log(`✅ CORS: Allowed request with no origin`);
+  } else {
+    console.log(`❌ CORS: Blocked origin ${origin}`);
+  }
+
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Max-Age", "86400"); // Cache preflight for 24 hours
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    console.log(`🔄 CORS: Handling OPTIONS preflight for ${req.path}`);
+    res.sendStatus(200);
+    return;
+  }
+
+  next();
+});
+
+// Alternative: Use the cors middleware as backup
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Body parsing middleware
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  const timestamp = new Date().toISOString();
+  const origin = req.headers.origin || "no-origin";
+  console.log(`${timestamp} - ${req.method} ${req.path} - Origin: ${origin}`);
   next();
 });
 
@@ -51,13 +122,15 @@ app.use((req, res, next) => {
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "50cube API is running",
+    message: "50cube API is running on Vercel!",
     timestamp: new Date().toISOString(),
     modules: {
       M13: "Leagues - ✅ Complete",
       M14: "Spotlight & Global Leaderboard - ✅ Complete",
-      M15: "Readers - ✅ Complete", // UPDATED!
+      M15: "Readers - ✅ Complete",
     },
+    environment: process.env.NODE_ENV || "development",
+    cors: "enabled",
   });
 });
 
@@ -289,7 +362,7 @@ app.post("/api/admin/create-sample-readers", async (req, res) => {
   }
 });
 
-// Development/Testing endpoints (keep existing ones)
+// Development/Testing endpoints
 app.get("/api/users", async (req, res) => {
   try {
     const User = mongoose.model("User");
@@ -361,6 +434,28 @@ app.post("/api/test-league", async (req, res) => {
   }
 });
 
+// Simple root route
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "50cube API is running on Vercel!",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+    modules: {
+      M13: "Leagues - ✅ Complete",
+      M14: "Spotlight & Global Leaderboard - ✅ Complete",
+      M15: "Readers - ✅ Complete",
+    },
+    endpoints: [
+      "GET /api/health - Health check",
+      "GET /api/leagues - List leagues",
+      "GET /api/leaderboard - Global leaderboard",
+      "GET /api/readers/catalog - Browse readers",
+    ],
+    cors: "enabled with enhanced logging",
+  });
+});
+
 // Error handling middleware
 app.use(
   (
@@ -378,31 +473,20 @@ app.use(
   }
 );
 
-// Add a simple root route - PUT THIS BEFORE THE 404 HANDLER
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "50cube API is running on Vercel!",
-    timestamp: new Date().toISOString(),
-    modules: {
-      M13: "Leagues - ✅ Complete",
-      M14: "Spotlight & Global Leaderboard - ✅ Complete",
-      M15: "Readers - ✅ Complete",
-    },
-    endpoints: [
-      "GET /api/health - Health check",
-      "GET /api/leagues - List leagues",
-      "GET /api/leaderboard - Global leaderboard",
-      "GET /api/readers/catalog - Browse readers",
-    ],
-  });
-});
-
-// 404 handler - KEEP THIS AT THE END
+// 404 handler - Keep this at the end
 app.use("*", (req, res) => {
+  console.log(`❌ 404: ${req.method} ${req.originalUrl} not found`);
   res.status(404).json({
     success: false,
     message: `Route ${req.method} ${req.originalUrl} not found`,
+    availableEndpoints: [
+      "GET /api/health",
+      "GET /api/leaderboard",
+      "GET /api/leaderboard/spotlight",
+      "GET /api/leaderboard/stats",
+      "GET /api/leagues",
+      "GET /api/readers/catalog",
+    ],
   });
 });
 
@@ -412,7 +496,11 @@ async function connectDB() {
     try {
       console.log("🔄 Connecting to MongoDB...");
       await mongoose.connect(
-        process.env.MONGODB_URI || "mongodb://localhost:27017/50cube"
+        process.env.MONGODB_URI || "mongodb://localhost:27017/50cube",
+        {
+          serverSelectionTimeoutMS: 10000, // 10 second timeout
+          socketTimeoutMS: 45000, // 45 second socket timeout
+        }
       );
       console.log("✅ Connected to MongoDB successfully");
     } catch (error: any) {
@@ -432,26 +520,6 @@ try {
 } catch (error) {
   console.log("⚠️ Snapshot job service initialization skipped in serverless");
 }
-
-// Add a simple root route
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "50cube API is running on Vercel!",
-    timestamp: new Date().toISOString(),
-    modules: {
-      M13: "Leagues - ✅ Complete",
-      M14: "Spotlight & Global Leaderboard - ✅ Complete",
-      M15: "Readers - ✅ Complete",
-    },
-    endpoints: [
-      "GET /api/health - Health check",
-      "GET /api/leagues - List leagues",
-      "GET /api/leaderboard - Global leaderboard",
-      "GET /api/readers/catalog - Browse readers",
-    ],
-  });
-});
 
 // Export the app for Vercel
 export default app;
