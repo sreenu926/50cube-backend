@@ -31,7 +31,7 @@ const corsOptions = {
     "http://localhost:3000", // Alternative dev port
     "http://localhost:4173", // Vite preview port
     "http://127.0.0.1:5173", // Alternative localhost
-    "https://50cube-staging-71ecng6nl-nagasreenivasarao-ps-projects.vercel.app", // Your backend URL (for same-origin requests)
+    "https://50cube-staging.vercel.app", // Your backend URL (for same-origin requests)
     // Add your actual frontend URLs here when you deploy frontend
     "https://your-frontend-50cube.vercel.app", // Replace with your actual frontend URL
     "https://50cube.vercel.app", // Example frontend URL - replace with actual
@@ -63,7 +63,7 @@ app.use((req, res, next) => {
     "http://localhost:3000",
     "http://localhost:4173",
     "http://127.0.0.1:5173",
-    "https://50cube-staging-71ecng6nl-nagasreenivasarao-ps-projects.vercel.app",
+    "https://50cube-staging.vercel.app",
     "https://your-frontend-50cube.vercel.app",
   ];
 
