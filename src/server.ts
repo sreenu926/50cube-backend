@@ -386,81 +386,6 @@ app.use("*", (req, res) => {
   });
 });
 
-// Database connection and server startup
-async function startServer() {
-  try {
-    // Connect to MongoDB
-    console.log("🔄 Connecting to MongoDB...");
-    await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/50cube"
-    );
-    console.log("✅ Connected to MongoDB successfully");
-
-    // Initialize M14 snapshot job service
-    console.log("🔄 Initializing M14 snapshot job service...");
-    snapshotJobService.initializeDailyJob();
-
-    // Start the snapshot job in development (optional)
-    if (process.env.NODE_ENV === "development") {
-      console.log("🔧 Development mode: Starting snapshot job...");
-      snapshotJobService.startJob();
-    }
-    console.log("✅ M14 snapshot job service ready");
-
-    // Start the Express server
-    app.listen(PORT, () => {
-      console.log(`🚀 50cube API Server running on port ${PORT}`);
-      console.log(`📍 API Base URL: http://localhost:${PORT}/api`);
-      console.log("📊 Available modules:");
-      console.log("  ✅ M13 - Leagues (Complete)");
-      console.log("  ✅ M14 - Spotlight & Global Leaderboard (Complete)");
-      console.log("  ✅ M15 - Readers (Complete)"); // UPDATED!
-      console.log("\n🔧 M14 Admin Endpoints:");
-      console.log(`  GET  /api/admin/snapshot-status     - Check job status`);
-      console.log(`  POST /api/admin/trigger-snapshot    - Manual trigger`);
-      console.log(
-        `  GET  /api/admin/snapshot-stats      - Snapshot statistics`
-      );
-      console.log("\n📈 M14 Public Endpoints:");
-      console.log(`  GET  /api/leaderboard               - Main leaderboard`);
-      console.log(`  GET  /api/leaderboard/spotlight     - Spotlight carousel`);
-      console.log(`  GET  /api/leaderboard/stats         - Overall stats`);
-      console.log(
-        `  GET  /api/leaderboard/user/:id/history - User rank history`
-      );
-      console.log("\n📚 M15 Reader Endpoints:");
-      console.log(`  GET  /api/readers/catalog           - Browse readers`);
-      console.log(`  POST /api/readers/buy               - Purchase reader`);
-      console.log(`  GET  /api/readers/download/:id      - Get download URL`);
-      console.log(`  GET  /api/readers/file/:token       - Download file`);
-      console.log(`  GET  /api/readers/library           - User's library`);
-      console.log("\n🔧 M15 Admin Endpoints:");
-      console.log(
-        `  POST /api/admin/create-sample-readers - Create sample data`
-      );
-    });
-  } catch (error: any) {
-    console.error("❌ Failed to start server:", error);
-    process.exit(1);
-  }
-}
-
-// Handle graceful shutdown
-process.on("SIGINT", async () => {
-  console.log("\n🔄 Shutting down server gracefully...");
-
-  // Stop the snapshot job
-  snapshotJobService.stopJob();
-  console.log("✅ Snapshot job stopped");
-
-  // Close MongoDB connection
-  await mongoose.connection.close();
-  console.log("✅ MongoDB connection closed");
-
-  console.log("👋 Server shutdown complete");
-  process.exit(0);
-});
-
 // Database connection for serverless
 async function connectDB() {
   if (mongoose.connection.readyState === 0) {
@@ -472,7 +397,6 @@ async function connectDB() {
       console.log("✅ Connected to MongoDB successfully");
     } catch (error: any) {
       console.error("❌ Failed to connect to MongoDB:", error);
-      // Don't throw in serverless - just log the error
     }
   }
 }
