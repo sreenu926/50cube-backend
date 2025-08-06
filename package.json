@@ -4,9 +4,9 @@
   "description": "50cube Tech Assessment Backend - MERN Stack API",
   "main": "server.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "start": "node server.ts",
+    "start": "node dist/server.js",
     "vercel-build": "echo 'No build needed for serverless'",
     "test": "jest",
     "lint": "eslint **/*.ts",

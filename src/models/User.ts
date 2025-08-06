@@ -79,8 +79,6 @@ const userSchema = new Schema<IUser>(
 
 // Indexes for performance
 userSchema.index({ totalPoints: -1 });
-userSchema.index({ username: 1 });
-userSchema.index({ email: 1 });
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
