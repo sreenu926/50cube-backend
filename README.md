@@ -4,8 +4,8 @@ Backend API for 50cube learning platform with bite-sized interactive modules, sk
 
 ## **Live Demo**
 
-- **API Base:** [https://your-vercel-url.vercel.app/api](https://your-vercel-url.vercel.app/api)
-- **Health Check:** [https://your-vercel-url.vercel.app/api/health](https://your-vercel-url.vercel.app/api/health)
+- **API Base:** [https://50cube-bakcend.vercel.app/api](https://your-vercel-url.vercel.app/api)
+- **Health Check:** [https://50cube-bakcend.vercel.app/api/health](https://your-vercel-url.vercel.app/api/health)
 
 ## **Modules Implemented**
 
